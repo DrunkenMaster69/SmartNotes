@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { formatDistanceToNow, parseISO } from "date-fns";
 
-// Simple reusable components defined inline
+// Reusable components with improved styling
 function Input({ type = "text", value, placeholder, onChange }) {
     return (
         <input
@@ -9,7 +9,7 @@ function Input({ type = "text", value, placeholder, onChange }) {
             value={value}
             placeholder={placeholder}
             onChange={onChange}
-            className="w-full p-2 border rounded"
+            className="input"
         />
     );
 }
@@ -20,17 +20,17 @@ function Textarea({ value, placeholder, onChange }) {
             value={value}
             placeholder={placeholder}
             onChange={onChange}
-            className="w-full p-2 border rounded"
-            rows="3"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            rows="4"
         />
     );
 }
 
 function Button({ children, onClick, variant = "primary" }) {
-    const baseStyle = "px-4 py-2 rounded font-semibold";
+    const baseStyle = "px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 active:scale-95";
     const styles = {
-        primary: `${baseStyle} bg-blue-500 text-white hover:bg-blue-600`,
-        destructive: `${baseStyle} bg-red-500 text-white hover:bg-red-600`,
+        primary: `${baseStyle} bg-blue-500 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`,
+        destructive: `${baseStyle} bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2`,
     };
     return (
         <button onClick={onClick} className={styles[variant]}>
@@ -39,16 +39,20 @@ function Button({ children, onClick, variant = "primary" }) {
     );
 }
 
-function Card({ children, className = "" }) {
+function Card({ children, className = "", isUrgent = false }) {
     return (
-        <div className={`border rounded-lg shadow-md ${className}`}>
+        <div
+            className={`border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow ${
+                isUrgent ? "border-red-500 bg-red-50" : "bg-white"
+            } ${className}`}
+        >
             {children}
         </div>
     );
 }
 
 function CardContent({ children }) {
-    return <div className="p-4">{children}</div>;
+    return <div className="p-5 space-y-4">{children}</div>;
 }
 
 export default function SmartNotes() {
@@ -92,8 +96,9 @@ export default function SmartNotes() {
     );
 
     return (
-        <div className="p-6 max-w-2xl mx-auto space-y-4">
-            <h1 className="text-2xl font-bold">Smart Notes</h1>
+        <div className="p-6 max-w-2xl mx-auto space-y-6">
+            <h1 className="text-3xl font-bold text-center text-gray-800">Smart Notes</h1>
+
             {/* Search */}
             <Input
                 placeholder="Search notes..."
@@ -103,7 +108,8 @@ export default function SmartNotes() {
 
             {/* Add Note Form */}
             <Card>
-                <CardContent className="space-y-3">
+                <CardContent>
+                    <h2 className="text-xl font-semibold text-gray-700">Add New Note</h2>
                     <Input
                         placeholder="Title"
                         value={newNote.title}
@@ -130,39 +136,42 @@ export default function SmartNotes() {
             </Card>
 
             {/* Notes List */}
-            {filteredNotes.length > 0 ? (
-                filteredNotes.map((note) => {
-                    const isUrgent =
-                        note.deadline && new Date(note.deadline) < new Date();
-                    return (
-                        <Card
-                            key={note.id}
-                            className={isUrgent ? "border-red-500" : ""}
-                        >
-                            <CardContent>
-                                <h2 className="text-lg font-semibold">{note.title}</h2>
-                                <p>{note.content}</p>
-                                {note.deadline && (
-                                    <p className="text-sm text-gray-500">
-                                        Due{" "}
-                                        {formatDistanceToNow(parseISO(note.deadline), {
-                                            addSuffix: true,
-                                        })}
-                                    </p>
-                                )}
-                                <Button
-                                    variant="destructive"
-                                    onClick={() => deleteNote(note.id)}
-                                >
-                                    Delete
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    );
-                })
-            ) : (
-                <p className="text-gray-500">No notes found.</p>
-            )}
+            <div className="space-y-4">
+                {filteredNotes.length > 0 ? (
+                    filteredNotes.map((note) => {
+                        const isUrgent =
+                            note.deadline && new Date(note.deadline) < new Date();
+                        return (
+                            <Card key={note.id} isUrgent={isUrgent}>
+                                <CardContent>
+                                    <h2 className="text-xl font-semibold text-gray-800">{note.title}</h2>
+                                    <p className="text-gray-600">{note.content}</p>
+                                    {note.deadline && (
+                                        <p className={`text-sm ${
+                                            isUrgent ? "text-red-600" : "text-gray-500"
+                                        }`}>
+                                            Due{" "}
+                                            {formatDistanceToNow(parseISO(note.deadline), {
+                                                addSuffix: true,
+                                            })}
+                                        </p>
+                                    )}
+                                    <div className="flex justify-end">
+                                        <Button
+                                            variant="destructive"
+                                            onClick={() => deleteNote(note.id)}
+                                        >
+                                            Delete
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        );
+                    })
+                ) : (
+                    <p className="text-center text-gray-500">No notes found.</p>
+                )}
+            </div>
         </div>
     );
 }
